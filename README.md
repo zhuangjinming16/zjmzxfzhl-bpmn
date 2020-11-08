@@ -4,6 +4,14 @@
 
 ## 您的支持，是我继续做开源项目的动力，谢谢！
 
+# zjmzxfzhl-bpmn 介绍
+
+1. `npm install` 安装依赖
+2. `npm run dev` 本地启动，启动成功后访问 [http://localhost:8899/zjmzxfzhl-doc/zjmzxfzhl-bpmn/](http://localhost:8899/zjmzxfzhl-doc/zjmzxfzhl-bpmn/)
+3. `npm run build:prod` 打包，默认打包到 `dist` 文件夹下
+4. 使用原生 `elementui` 设计，希望大家可以一起维护起来，把生态做起来，让所有人收益
+5. 在线体验地址：[https://zjm16.gitee.io/zjmzxfzhl-doc/zjmzxfzhl-bpmn/](https://zjm16.gitee.io/zjmzxfzhl-doc/zjmzxfzhl-bpmn/)
+
 # 项目介绍
 
 `Zjmzxfzhl` 集成了 `SpringBoot` `Flowable` `Vue` `Elementui` `FormMaking`，采用前后端分离架构。
