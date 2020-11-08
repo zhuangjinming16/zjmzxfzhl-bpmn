@@ -67,7 +67,7 @@
     import {Message} from 'element-ui'
 
     export default {
-        name: 'Vbpmn',
+        name: 'VueBpmn',
         props: {
             isView: {
                 type: Boolean,
