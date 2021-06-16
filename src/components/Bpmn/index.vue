@@ -2,23 +2,20 @@
     <el-container v-loading="isView" class="fm2-container" :class="{ 'view-mode': isView }">
         <el-header height="45px">
             <el-button-group style="margin: 5px;">
-                <el-button icon="el-icon-arrow-left" @click="handleUndo">撤回</el-button>
-                <el-button icon="el-icon-arrow-right" @click="handleRedo">重做</el-button>
-                <el-button icon="el-icon-circle-plus-outline" @click="handleZoom(0.2)">放大</el-button>
-                <el-button icon="el-icon-help" @click="handleZoom(0)">还原</el-button>
-                <el-button icon="el-icon-remove-outline" @click="handleZoom(-0.2)">缩小</el-button>
-                <el-button icon="el-icon-upload2" @click="importXml">导入</el-button>
+                <el-button size="mini" icon="el-icon-arrow-left" @click="handleUndo">撤回</el-button>
+                <el-button size="mini" icon="el-icon-arrow-right" @click="handleRedo">重做</el-button>
+                <el-button size="mini" icon="el-icon-circle-plus-outline" @click="handleZoom(0.2)">放大</el-button>
+                <el-button size="mini" icon="el-icon-help" @click="handleZoom(0)">还原</el-button>
+                <el-button size="mini" icon="el-icon-remove-outline" @click="handleZoom(-0.2)">缩小</el-button>
+                <el-button size="mini" icon="el-icon-upload2" @click="importXml">导入</el-button>
                 <el-upload action="" :before-upload="openBpmn" style="display: none">
                     <el-button ref="importBtn" size="mini" icon="el-icon-folder-opened"/>
                 </el-upload>
-                <el-button icon="el-icon-download" @click="handleExportXmlAction">XML</el-button>
-                <el-button icon="el-icon-download" @click="handleExportSvgAction">SVG
-                </el-button>
-                <el-button icon="el-icon-tickets" @click="handlePreviewXml">预览</el-button>
-                <el-button icon="el-icon-delete" @click="handleClear">清空</el-button>
-
-                <el-button icon="el-icon-upload" @click="handleSave">保存
-                </el-button>
+                <el-button size="mini" icon="el-icon-download" @click="handleExportXmlAction">XML</el-button>
+                <el-button size="mini" icon="el-icon-download" @click="handleExportSvgAction">SVG</el-button>
+                <el-button size="mini" icon="el-icon-tickets" @click="handlePreviewXml">预览</el-button>
+                <el-button size="mini" icon="el-icon-delete" @click="handleClear">清空</el-button>
+                <el-button size="mini" icon="el-icon-tickets" @click="handleConfig">配置</el-button>
             </el-button-group>
         </el-header>
         <el-main class="fm2-main">
@@ -27,8 +24,7 @@
                     <div class="canvas" ref="canvas"/>
                 </el-container>
                 <el-aside class="widget-config-container">
-                    <bpmn-element ref="_bpmnElement" v-if="modeler" :modeler="modeler"
-                                    :processCategory="processCategory" :taskCategory="taskCategory"/>
+                    <bpmn-element ref="_bpmnElement" v-if="showModeler && modeler" :modeler="modeler" :bpmnConfig="bpmnConfig" :datasource="datasource"/>
                 </el-aside>
             </el-container>
         </el-main>
@@ -46,10 +42,25 @@
                             :options="{wrap: true, readOnly: true}">
             </vue-ace-editor>
             <span slot="footer">
-            <el-button icon="el-icon-document" type="primary" v-clipboard:copy="process.xml"
-                       v-clipboard:success="onCopy">复 制</el-button>
-            <el-button icon="el-icon-close" @click="xmlVisible = false">关闭</el-button>
-        </span>
+                <el-button icon="el-icon-document" type="primary" v-clipboard:copy="process.xml"
+                        v-clipboard:success="onCopy">复 制</el-button>
+                <el-button icon="el-icon-close" @click="xmlVisible = false">关闭</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog :visible.sync="bpmnConfigVisible" title="配置" fullscreen center>
+            <vue-ace-editor v-model="bpmnConfigJson"
+                            @init="bpmnConfigEditorInit"
+                            lang="json"
+                            theme="chrome"
+                            width="100%"
+                            height="calc(100vh - 214px)"
+                            :options="{ wrap: true}">
+            </vue-ace-editor>
+            <span slot="footer">
+                <el-button icon="el-icon-document" type="primary" @click="saveBpmnConfig">确定</el-button>
+                <el-button icon="el-icon-close" @click="closeBpmnConfig">关闭</el-button>
+            </span>
         </el-dialog>
     </el-container>
 
@@ -59,15 +70,21 @@
     // 汉化
     import translate from './translate/index'
     import Modeler from 'bpmn-js/lib/Modeler'
-    import BpmnElement from './BpmnElement'
+    import {BpmnElement} from './BpmnElement/lib/BpmnElement.umd.min.js'
     // 引入flowable的节点文件
     import flowableModdle from './descriptors/flowable.json'
     import VueAceEditor from 'vue2-ace-editor'
+    import {config} from './config/config.js'
     import newXml from './resources/newDiagram.js'
-    import {Message} from 'element-ui'
+    // import {Message} from 'element-ui'
+    // 自定义元素选中时的弹出菜单（修改 默认任务 为 用户任务）
+    import CustomContentPadProvider from "./plugins/content-pad"
+    // 自定义左侧菜单（修改 默认任务 为 用户任务）
+    import CustomPaletteProvider from "./plugins/palette"
+    import axios from 'axios'
 
     export default {
-        name: 'VueBpmn',
+        name: 'Bpmn',
         props: {
             isView: {
                 type: Boolean,
@@ -79,7 +96,7 @@
                     id: undefined,
                     key: 'processId_1',
                     name: 'processName_1',
-                    category: '',
+                    category: 'demo',
                     description: 'description_1'
                 }
             }
@@ -88,62 +105,96 @@
         data() {
             return {
                 scale: 1,  //流程图比例（用于放大缩小）
+                showModeler: true,
                 modeler: null,
                 process: {
                     xml: '',
                     svg: ''
                 },
                 xmlVisible: false,
+                bpmnConfigVisible: false,
+                bpmnConfig: config,
+                bpmnConfigJson: '',
+                datasource: undefined,
                 idTest: /^[a-z_][\w-.]*$/i,
-                processCategory: [],
-                taskCategory: []
             }
         },
+        // watch: {
+        //     bpmnConfigJson: {
+        //         handler(newVal){
+        //             this.bpmnConfig = JSON.parse(newVal)
+        //         },
+        //         immediate: true
+        //     }
+        // },
         mounted() {
-            this.processCategory = [
-                {
-                    id: 'demo',
-                    name: '实例流程'
-                },
-                {
-                    id: 'hr',
-                    name: 'HR流程'
-                }
-            ]
-
-            this.taskCategory = [
-                {
-                    id: 'todo',
-                    name: '待办任务'
-                },
-                {
-                    id: 'toRead',
-                    name: '待阅任务'
-                }
-            ]
-
-            const canvas = this.$refs.canvas
-            // 生成实例
-            this.modeler = new Modeler({
-                container: this.$refs.canvas,
-                additionalModules: [
-                    {
-                        translate: ['value', translate]
-                    }
-                ],
-                moddleExtensions: {
-                    flowable: flowableModdle
-                }
-            })
-            // 新增流程定义
-            this.createNewDiagram(this.modelData?.editor)
+            if(this.bpmnConfig.datasourceUrl){
+                axios({
+                    method: 'get',
+                    url: this.bpmnConfig.datasourceUrl
+                }).then(resp => {
+                    this.datasource = resp.data
+                    this.initModeler()
+                }).catch((error) => {
+                    this.$message.error('获取数据源数据失败，可尝试访问：http://zjm16.gitee.io/zjmzxfzhl-doc/zjmzxfzhl-bpmn/')
+                })
+            } else {
+                this.initModeler()
+            }
         },
         methods: {
+            initModeler(){
+                const canvas = this.$refs.canvas
+                // 生成实例
+                this.modeler = new Modeler({
+                    container: this.$refs.canvas,
+                    additionalModules: [
+                        {translate: ['value', translate]},
+                        CustomContentPadProvider,
+                        CustomPaletteProvider
+                    ],
+                    moddleExtensions: {
+                        flowable: flowableModdle
+                    }
+                })
+                // 新增流程定义
+                this.createNewDiagram(this.modelData?.editor)
+            },
             // init ace editor
             editorInit: function () {
                 require('brace/ext/language_tools')
                 require('brace/mode/xml')
                 require('brace/theme/chrome')
+            },
+            bpmnConfigEditorInit: function () {
+                require('brace/ext/language_tools')
+                require('brace/mode/json')
+                require('brace/theme/chrome')
+            },
+            saveBpmnConfig(){
+                this.showModeler = false
+                this.$nextTick().then(() => {
+                    this.bpmnConfig = JSON.parse(this.bpmnConfigJson)
+                    if(this.bpmnConfig.datasourceUrl){
+                        axios({
+                            method: 'get',
+                            url: this.bpmnConfig.datasourceUrl
+                        }).then(resp => {
+                            this.datasource = resp.data
+                            this.showModeler = true
+                            this.bpmnConfigVisible = false
+                        }).catch((error) => {
+                            this.$message.error('获取数据源数据失败，可尝试访问：http://zjm16.gitee.io/zjmzxfzhl-doc/zjmzxfzhl-bpmn/')
+                        })
+                    }else{
+                        this.datasource = undefined
+                        this.showModeler = true
+                        this.bpmnConfigVisible = false
+                    }
+                })
+            },
+            closeBpmnConfig(){
+                this.bpmnConfigVisible = false
             },
             getProcessElement() {
                 return this.modeler.getDefinitions().rootElements[0]
@@ -172,30 +223,6 @@
                         // this.adjustPalette()
                     }
                 })
-            },
-            // 当图发生改变的时候会调用这个函数，这个data就是图的xml
-            setEncoded(type, data) {
-                // 把xml转换为URI，下载要用到的
-                const encodedData = encodeURIComponent(data)
-                if (data) {
-                    if (type === 'xml') {
-                        // 获取到图的xml，保存就是把这个xml提交给后台
-                        this.process.xml = data
-                        return {
-                            filename: this.process.name + '.bpmn20.xml',
-                            href: "data:application/bpmn20-xml;charset=UTF-8," + encodedData,
-                            data: data
-                        }
-                    }
-                    if (type === 'svg') {
-                        this.process.svg = data
-                        return {
-                            filename: this.process.name + '.bpmn20.svg',
-                            href: "data:application/text/xml;charset=UTF-8," + encodedData,
-                            data: data
-                        }
-                    }
-                }
             },
             // 导入
             importXml() {
@@ -261,31 +288,14 @@
                     this.xmlVisible = true
                 })
             },
+            // 配置
+            handleConfig() {
+                this.bpmnConfigJson = JSON.stringify(this.bpmnConfig, null, 2)
+                this.bpmnConfigVisible = true
+            },
             // 清空
             handleClear() {
                 this.createNewDiagram()
-            },
-            // 保存
-            handleSave() {
-                const _this = this
-                this.$refs._bpmnElement?.validate().then(() => {
-                    const processId = this.getProcess().id
-                    if (!this.idTest.test(processId)) {
-                        Message.error('流程标识key格式不正确')
-                        return
-                    }
-                    this.modeler.saveXML({format: true}, (err, xml) => {
-                        xml = _this.replaceLtAndGt(xml)
-                        const process = _this.getProcess()
-                        _this.process.xml = xml
-                        _this.modelData.editor = xml
-                        _this.modelData.key = process.id
-                        _this.modelData.name = process.name
-                        _this.modelData.category = process.category
-
-                        _this.$emit("save", _this.modelData);
-                    })
-                }).catch(e => console.error(e))
             },
             // 复制成功
             onCopy() {
@@ -318,13 +328,12 @@
     }
 </script>
 
-<style lang="scss">
-    /*左边工具栏以及编辑节点的样式*/
-    @import "../../../node_modules/bpmn-js/dist/assets/diagram-js.css";
-    @import "../../../node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
-    @import "../../../node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css";
-    @import "../../../node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
+<style src="bpmn-js/dist/assets/diagram-js.css"/>
+<style src="bpmn-js/dist/assets/bpmn-font/css/bpmn.css"/>
+<style src="bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css"/>
+<style src="bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"/>
 
+<style lang="scss">
     $primary-color: #409EFF;
     $primary-background-color: #ecf5ff;
 
@@ -385,9 +394,11 @@
     }
 
     .widget-config-container {
+        /* margin-bottom: 0px !important; */
+        width: 350px !important;
         position: relative;
         border-left: solid 1px #e4e7ed;
-
+        overflow: hidden;
         .el-form-item__label {
             font-size: 13px;
         }

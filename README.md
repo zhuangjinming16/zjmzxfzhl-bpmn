@@ -1,169 +1,98 @@
-# Zjmzxfzhl
+`datasourceUrl`
 
-## 开源不易，如果`Zjmzxfzhl`对您有帮助，请点右上角 `Star`或者 `Fork` 支持一下。
-
-## 您的支持，是我继续做开源项目的动力，谢谢！
-
-# zjmzxfzhl-bpmn 介绍
-
-1. `npm install` 安装依赖
-2. `npm run dev` 本地启动，启动成功后访问 [http://localhost:8899/zjmzxfzhl-doc/zjmzxfzhl-bpmn/](http://localhost:8899/zjmzxfzhl-doc/zjmzxfzhl-bpmn/)
-3. `npm run build:prod` 打包，默认打包到 `dist` 文件夹下
-4. 使用原生 `elementui` 设计，希望大家可以一起维护起来，把生态做起来，让所有人受益
-5. 在线体验地址：[https://zjm16.gitee.io/zjmzxfzhl-doc/zjmzxfzhl-bpmn/](https://zjm16.gitee.io/zjmzxfzhl-doc/zjmzxfzhl-bpmn/)
-
-# 项目介绍
-
-`Zjmzxfzhl` 集成了 `SpringBoot` `Flowable` `Vue` `Elementui` `FormMaking`，采用前后端分离架构。
-
-[Gitee:Zjmzxfzhl](https://gitee.com/zjm16/zjmzxfzhl) [Github:Zjmzxfzhl](https://github.com/zhuangjinming16/zjmzxfzhl)
-
-若需要微服务架构，请移步：[Gitee:Zjmzxfzhl-Cloud](https://gitee.com/zjm16/zjmzxfzhl-cloud) 或 [Github:Zjmzxfzhl-Cloud](https://github.com/zhuangjinming16/zjmzxfzhl-cloud)
-
-`v1.1.6`以后版本使用`spring-security-oauth2`鉴权，若需要使用 `shiro` 鉴权请移步 [zjmzxfzhl-shiro](https://gitee.com/zjm16/zjmzxfzhl/tree/v1.1.5)
-
-特别提醒：
-1. `zjmzxfzhl` `master` 分支新增了 我的汇总、我的待阅、抄送功能，用到的 `flowable6.5.1.28` 相关 `jar` 包官方没有发布到 `maven`
-中央仓库，我已打包好并放在群共享 可加群下载，QQ群：913659692。
-
-2. `zjmzxfzhl-common` 已独立管理，可以同时用于 `zjmzxfzhl` 和 `zjmzxfzhl-cloud` ，欢迎 star & fork 支持，谢谢！！！
-
-   [Gitee:zjmzxfzhl-common](https://gitee.com/zjm16/zjmzxfzhl-common) [Github:zjmzxfzhl-common](https://github.com/zhuangjinming16/zjmzxfzhl-common)
-
-3. `zjmzxfzhl-vue` 已独立管理，可以同时用于 `zjmzxfzhl` 和 `zjmzxfzhl-cloud` ，欢迎 star & fork 支持，谢谢！！！
-
-   [Gitee:zjmzxfzhl-vue](https://gitee.com/zjm16/zjmzxfzhl-vue) [Github:zjmzxfzhl-vue](https://github.com/zhuangjinming16/zjmzxfzhl-vue)
+获取后台数据源URL地址
 
 
-## 技术架构
-### 后端技术
 
-- 基础框架：Java8 & Spring Boot & Maven
-- 数据库：Mysql 等
-- 鉴权框架：Spring Security OAuth2
-- 缓存框架：Redis & Redisson
-- 持久层框架：Mybatis Plus
-- 日志记录：Logback
-- 工作流框架：Flowable
-- 其他依赖：Lombok、Kaptcha、EasyExcel 等
-### 前端技术
-- vue , vuex , vue-router
-- elementui
-- vue-element-admin
-- vue-form-making
-- mock
+`bpmnCollapseItems`
 
-## 主要实现内容
-1. 前后分离开发，前后端可以独立部署，也可以合并部署
-2. `我的流程`、`系统管理`、`示例管理`、`流程管理`、`监控管理`
-3. `功能权限`，`菜单权限`、`按钮权限`细粒度配置
-4. `数据权限`，注解实现或数据库配置实现
-5. `我的流程` 包含 `我的汇总`、`发起流程`、`我的待办`、`我的待阅`、`我的已办`，`流程管理` 包含 `表单设计`、`流程设计`、`流程定义`、`流程管理`、`任务管理`，`任务执行` 包含 `提交`、`抄送`、`转办`、`委派`、`终止`、`退回`（已实现退回并行网关节点、子流程退回）、`(批量)已阅` 等
+描述属性/元素所归属的，应配置为数组
 
-   流程设计约定：
-   - 发起者启动流程后若要自动完成第一个用户任务，则第一个 `userTask` 的 `id` 要定义为`__initiator__`，若涉及流程表单，则可设置`__initiator__`的任务表单 `formKey` 与流程表单相同
-   - 如果涉及并行网关，并行网关需成对出现，且发散节点要以 `_begin` 结尾，汇聚节点要以 `_end` 结尾，可以嵌套但不能交叉嵌套，这样就能确保可以退回到并行网关的单个节点上（不会退回到并行网关的其他分支）
-   - 如果流程涉及业务主键 `businessKey`，流程设计时加入 `流程扩展属性` 或者 `流程数据对象` 即可
-    ```xml
-    <extensionElements>
-        <flowable:properties>
-            <flowable:property name="showBusinessKey" value="true" />
-        </flowable:properties>
-    </extensionElements>
-    ```
-    ```xml
-    <dataObject id="showBusinessKey" name="showBusinessKey" itemSubjectRef="xsd:boolean">
-        <extensionElements>
-            <flowable:value>true</flowable:value>
-        </extensionElements>
-    </dataObject>
-    ```
-   - 流程设计可参考 `zjmzxfzhl/zjmzxfzhl-admin/src/main/resources/processes_test` 下的流程
-   - 自定义表单使用LGPL协议开源的 [FormMaking](http://form.xiaoyaoji.cn/pricing/#/zh-CN/)，若使用的 `FormMaking` 安装包（及通过 `npm` 引入）的方式，不需要购买授权，但若有使用 `FormMaking` 的源代码，需要到官方购买授权
-6. `Redis` 分布式锁，可实现交易防重发等业务场景
-7. `App` 开发示例，包含：注册、登录、获取用户信息等
-8. 代码生成器，包含前端和后端
-9. 定时任务、异步任务线程池管理
-10. `Excel` 导入导出
+大类排序索引号，越小越靠前显示
+index: 1,
+大类英文名，节点属性应配置在 `__config__`下，例如：$collapseItemName:"general"
+name: 'general',
+大类中文名
+label: "常规配置"
 
-## 文档及演示环境
-文档地址：[https://zjm16.gitee.io/zjmzxfzhl-doc](https://zjm16.gitee.io/zjmzxfzhl-doc)
 
-流程设计器在线体验：[https://zjm16.gitee.io/zjmzxfzhl-doc/zjmzxfzhl-bpmn](https://zjm16.gitee.io/zjmzxfzhl-doc/zjmzxfzhl-bpmn)
 
-演示环境：[http://118.190.100.3:8080/zjmzxfzhl](http://118.190.100.3:8080/zjmzxfzhl)
+`common`
+公共字段，所有类型的节点都具备这些属性/元素
 
-测试用户（默认密码都是 `1`）：
 
-`admin`用户，拥有所有权限，测试通用功能、工作流程连贯性等，可以使用`admin`用户，例如执行工程内的`complex-嵌套并行网关子流程`可以使用`admin`用户
 
-`zjmzxfzhl`普通员工岗位，可以发起请假流程
+`bpmnComponents`
+bpmn流程组件配置清单，包含 
+bpmn:Process,bpmn:SubProcess,bpmn:StartEvent,bpmn:IntermediateThrowEvent,
+bpmn:Task,bpmn:SendTask,bpmn:ReceiveTask,bpmn:UserTask,flowable:UserTask,
+bpmn:ManualTask,bpmn:BusinessRuleTask,bpmn:ServiceTask,bpmn:ScriptTask,
+bpmn:EndEvent,bpmn:SequenceFlow,bpmn:ExclusiveGateway,bpmn:ParallelGateway,
+bpmn:InclusiveGateway,bpmn:ComplexGateway,bpmn:EventBasedGateway...等流程组件节点
 
-`zjm`经理岗位，可以审批员工的请假流程
 
-`zxf`老板岗位，可以审批员工的请假流程
 
-请假流程详见 `zjmzxfzhl/zjmzxfzhl-admin/src/main/resources/processes_test/leave.bpmn20.xml` 或 `zjmzxfzhl/zjmzxfzhl-admin/src/main/resources/processes_test/leaveBusinessKey.bpmn20.xml`
+`__bpmnConfig__`
 
-## 技术交流
-QQ群 : 
+当前节点属性组件类型，当配置了type且type!=badge，说明该属性是简单属性,
+配置的类型清单如下：
+input:单行文本,input-number:数值,textarea:多行文本,password:密码,
+select:下拉选择,cascader:级联选择,radio:单选框,checkbox:多选框,
+switch:开关,slider:滑块,time:时间选择,time-range:时间区间选择,
+date:日期选择,date-range:日期区间选择,rate:评分,badge:一对多关系配置
+type: "input",
 
-913659692 (已满)
+当配置了$type说明该配置是复杂元素
+表示元素在bpmn模型中的类型，该类型配置在描述文件*.json(例如：flowable.json,bpmn.json)中,
+当只配置了$type，应继续配置 fields ，配置当前元素的属性或子元素
+当配置了$type，且又配置了 type=badge，说明该元素是一对多关系的复杂元素，应继续配置showName,badgeConfig
+$type: "bpmn:Documentation", 
 
-758367761
+内置的bpmn描述文件属性的isMany配置，若内置isMany=true,则从bpmnModeler拿到数据是数组
+isMany: true, 
 
-## 界面展示
+配合isMany，若内置属性配置为isMany=true，但实际属性是单节点，则配置$isMany=false
+$isMany: false,
 
-![](https://img-blog.csdnimg.cn/20201006123139193.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
+复杂属性在bpmn模型定义中，会有一个bodyProperty属性，若存在bodyProperty则配置$bodyPropertyName即可
+像类型为bpmn:Documentation的bodyProperty=text，类型bpmn:Expression的bodyProperty=body，详见bpmn.json
+您也可以自定义描述文件，用于描述自定义的属性/元素信息，可参考 [MiyueFE(Bpmn-js自定义文件说明)](https://juejin.cn/post/6912331982701592590)
+$bodyPropertyName: "text",
+复杂元素在某些条件下应设置成 undefined，例如多实例场景下isSequential-多实例标识未设置时，则自身元素应为undefined
+$undefinedBy: "this.isSequential === undefined",
+当前属性/元素相对父级的数据位置
+$dataPath: "values",
 
-![](https://img-blog.csdnimg.cn/2020032821122660.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
 
-![](https://img-blog.csdnimg.cn/20200328211234880.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
 
-![](https://img-blog.csdnimg.cn/20200328211245801.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
+`__config__`
+简单属性详细配置，其余默认配置请见`form.js`，也可查看表单设计器配置 [form-generator](https://gitee.com/mrhj/form-generator) (本流程设计器设计思想来源于表单设计器)
+label:属性中文名,required:属性必输,showBy:属性是否显示判断条件
+$collapseItemName:属性归属大类名称,
+type=select,radio,checkbox时，若涉及后台数据，应配置 dataType:dynamic-动态数据 static-静态数据,dynamicOptions:动态数据详细配置
 
-![](https://img-blog.csdnimg.cn/2020100612340279.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
 
-![](https://img-blog.csdnimg.cn/20201006123431902.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
 
-![](https://img-blog.csdnimg.cn/20201006123102845.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
+`__slot__`
+type=select,radio,checkbox，若涉及静态数据，应配置该项，配置为数组
 
-![](https://img-blog.csdnimg.cn/20200328211256213.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
 
-![](https://img-blog.csdnimg.cn/20200328211323783.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
 
-![](https://img-blog.csdnimg.cn/20200328211441117.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
+`简单属性的其余配置`
+与`__bpmnConfig__`,`__config__`,`__slot__ `同级的，是`__bpmnConfig__.type`对应的`elementUI`组件的其他属性的配置，
+例如`dueDate`配置，`dueDate.__bpmnConfig__.type = date` 表示，日期组件，但 `dueDate.type = datetime`则将日期组件配置成日期时间组件
 
-![](https://img-blog.csdnimg.cn/20200328211448303.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20200328211505420.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/2020100612355468.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
-
-![](https://img-blog.csdnimg.cn/20201006123609592.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
-
-![](https://img-blog.csdnimg.cn/20201006123617560.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
-
-![](https://img-blog.csdnimg.cn/20200328211756182.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20200328211559996.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20200328211539437.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20201006123921431.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
-
-![](https://img-blog.csdnimg.cn/20200328211904277.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20200328211910561.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20200328211924102.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20200328211930452.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20200328211936458.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70)
-
-![](https://img-blog.csdnimg.cn/20201006124138717.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
-
-![](https://img-blog.csdnimg.cn/20201006125002125.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
-
-![](https://img-blog.csdnimg.cn/20201006131531738.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3pqbTE2,size_16,color_FFFFFF,t_70#pic_center)
+```js
+dueDate: {
+  __bpmnConfig__: {
+      type: "date",
+  },
+  __config__: {
+      $collapseItemName: "task",
+      label: "到期时间"
+  },
+  format: 'yyyy-MM-dd HH:mm:ss',
+  type: "datetime",
+  'value-format': "yyyy-MM-dd HH:mm:ss"
+}
+```

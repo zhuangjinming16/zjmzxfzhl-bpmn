@@ -1,15 +1,15 @@
 <template>
     <div id="app">
-        <vue-bpmn  @save="btnSave" :modelData="modelData"/>
+        <bpmn :modelData="modelData"/>
     </div>
 </template>
 
 <script>
-    import VueBpmn from "@/components/VueBpmn"
+    import Bpmn from "@/components/Bpmn/index.vue"
 
     export default {
         name: 'App',
-        components: {VueBpmn},
+        components: {Bpmn},
         data() {
             return {
                 id: undefined,
@@ -18,15 +18,9 @@
                     editor: undefined,
                     key: 'processId_1',
                     name: 'processName_1',
-                    category: '',
+                    category: 'demo',
                     description: 'description_1'
                 },
-            }
-        },
-
-        methods: {
-            btnSave(modelData) {
-
             }
         }
     }

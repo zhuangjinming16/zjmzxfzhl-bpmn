@@ -428,6 +428,11 @@
           "type": "String"
         },
         {
+          "name": "aNumber",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
           "name": "dueDate",
           "isAttr": true,
           "type": "String"
